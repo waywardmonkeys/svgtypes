@@ -22,13 +22,6 @@ pub(crate) trait ByteExt {
     /// `[ \r\n\t]`
     fn is_space(&self) -> bool;
 
-    fn is_quote(&self) -> bool;
-
-    /// Checks if a byte is an ASCII char.
-    ///
-    /// `[A-Za-z]`
-    fn is_letter(&self) -> bool;
-
     /// Checks if a byte is an ASCII ident char.
     fn is_ascii_ident(&self) -> bool;
 }
@@ -52,16 +45,6 @@ impl ByteExt for u8 {
     #[inline]
     fn is_space(&self) -> bool {
         matches!(*self, b' ' | b'\t' | b'\n' | b'\r')
-    }
-
-    #[inline]
-    fn is_quote(&self) -> bool {
-        matches!(*self, b'\'' | b'"')
-    }
-
-    #[inline]
-    fn is_letter(&self) -> bool {
-        matches!(*self, b'A'..=b'Z' | b'a'..=b'z')
     }
 
     #[inline]
