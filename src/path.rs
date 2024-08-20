@@ -677,7 +677,10 @@ impl<'a> Iterator for SimplifyingPathParser<'a> {
             match segment {
                 PathSegment::MoveTo { .. } | PathSegment::ClosePath { .. } => {}
                 _ => {
-                    let new_seg = SimplePathSegment::MoveTo { x: self.prev_mx, y: self.prev_my };
+                    let new_seg = SimplePathSegment::MoveTo {
+                        x: self.prev_mx,
+                        y: self.prev_my,
+                    };
                     self.buffer.push(new_seg);
                     self.prev_simple_seg = Some(new_seg);
                 }
@@ -1004,6 +1007,20 @@ mod simple_tests {
         SimplePathSegment::CurveTo { x1: 29.0, y1: 135.0, x2: 171.0, y2: 45.0, x: 180.0, y: 155.0 }
     );
 
+    test!(relative_smooth_curve_to_after_arc_to, "M 1 5 A 5 5 0 0 1 3 1 s 3 2 8 2",
+        SimplePathSegment::MoveTo { x: 1.0, y: 5.0 },
+        SimplePathSegment::CurveTo {
+            x1: 1.0, y1: 3.4262134833347355,
+            x2: 1.7409707866677877, y2: 1.9442719099991592,
+            x: 2.9999999999999996, y: 1.0000000000000004
+        },
+        SimplePathSegment::CurveTo {
+            x1: 2.9999999999999996, y1: 1.0000000000000004,
+            x2: 6.0, y2: 3.0000000000000004,
+            x: 11.0, y: 3.0000000000000004
+        }
+    );
+
     test!(smooth_quadratic_after_move_to, "M 30 40 T 180 155",
         SimplePathSegment::MoveTo { x: 30.0, y: 40.0 },
         SimplePathSegment::Quadratic { x1: 30.0, y1: 40.0, x: 180.0, y: 155.0 }
@@ -1055,6 +1072,19 @@ mod simple_tests {
         SimplePathSegment::MoveTo { x: 30.0, y: 30.0 },
         SimplePathSegment::Quadratic { x1: 30.0, y1: 30.0, x: 40.0, y: 140.0 },
         SimplePathSegment::Quadratic { x1: 80.0, y1: 180.0, x: 170.0, y: 30.0 }
+    );
+
+    test!(relative_smooth_quadratic_to_after_arc_to, "M 1 5 A 5 5 0 0 1 3 1 t 8 2",
+        SimplePathSegment::MoveTo { x: 1.0, y: 5.0 },
+        SimplePathSegment::CurveTo {
+            x1: 1.0, y1: 3.4262134833347355,
+            x2: 1.7409707866677877, y2: 1.9442719099991592,
+            x: 2.9999999999999996, y: 1.0000000000000004
+        },
+        SimplePathSegment::Quadratic {
+            x1: 2.9999999999999996, y1: 1.0000000000000004,
+            x: 11.0, y: 3.0000000000000004
+        }
     );
 
     test!(implicit_move_to_after_close_path, "M 10 20 L 30 40 Z L 50 60",
