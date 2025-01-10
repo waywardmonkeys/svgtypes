@@ -181,24 +181,20 @@ impl Stream<'_> {
                 self.parse_list_separator();
 
                 if is_percent {
-                    fn from_percent(v: f64) -> u8 {
-                        let n = (v * 255.0).round() as i32;
-                        bound(0, n, 255) as u8
-                    }
-
-                    color.red = from_percent(value / 100.0);
-                    color.green = from_percent(self.parse_list_number_or_percent()?);
-                    color.blue = from_percent(self.parse_list_number_or_percent()?);
+                    // The division and multiply are explicitly not collapsed, to ensure the red
+                    // component has the same rounding behavior as the green and blue components.
+                    color.red = ((value / 100.0) * 255.0).round() as u8;
+                    color.green = (self.parse_list_number_or_percent()? * 255.0).round() as u8;
+                    color.blue = (self.parse_list_number_or_percent()? * 255.0).round() as u8;
                 } else {
-                    color.red = f64_bound(0.0, (value.round() as i32).into(), 255.0) as u8;
-                    color.green = f64_bound(0.0, self.parse_list_number()?.round(), 255.0) as u8;
-                    color.blue = f64_bound(0.0, self.parse_list_number()?.round(), 255.0) as u8;
+                    color.red = value.round() as u8;
+                    color.green = self.parse_list_number()?.round() as u8;
+                    color.blue = self.parse_list_number()?.round() as u8;
                 }
 
                 self.skip_spaces();
                 if !self.starts_with(b")") {
-                    color.alpha =
-                        (f64_bound(0.0, self.parse_list_number()?, 1.0) * 255.0).round() as u8;
+                    color.alpha = (self.parse_list_number()? * 255.0).round() as u8;
                 }
 
                 self.skip_spaces();
@@ -216,8 +212,7 @@ impl Stream<'_> {
 
                 self.skip_spaces();
                 if !self.starts_with(b")") {
-                    color.alpha =
-                        (f64_bound(0.0, self.parse_list_number()?, 1.0) * 255.0).round() as u8;
+                    color.alpha = (self.parse_list_number()? * 255.0).round() as u8;
                 }
 
                 self.skip_spaces();
@@ -298,11 +293,6 @@ fn hue_to_rgb(t1: f32, t2: f32, mut hue: f32) -> f32 {
     } else {
         t1
     }
-}
-
-#[inline]
-fn bound<T: Ord>(min: T, val: T, max: T) -> T {
-    std::cmp::max(min, std::cmp::min(max, val))
 }
 
 #[inline]
